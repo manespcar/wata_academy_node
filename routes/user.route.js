@@ -1,5 +1,5 @@
 const {Router, response} = require('express');
-const mysqlConnection = require('../config/config.db');
+const {mysqlConnection} = require('../config/config.db');
 
 var router = new Router();
 

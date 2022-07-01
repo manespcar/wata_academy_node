@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const {mysqlConnection} = require('../config/config.db');
 
 require('dotenv').config();
 
@@ -8,9 +9,15 @@ class Server {
     constructor() {
         this.app = express();
 
+        this.connectDB();
+
         this.middlewares();
 
         this.routes();        
+    }
+
+    connectDB() {
+        mysqlConnection();
     }
 
     middlewares() {
