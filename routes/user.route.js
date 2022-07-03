@@ -1,40 +1,46 @@
 const { Router, response } = require('express');
 const { check, validationResult } = require('express-validator');
-const UserService = require('../repository/user.repository');
+const { validateJWT } = require('../helpers/validate-jwt');
+const UserRepository = require('../repository/user.repository');
 
 var router = new Router();
 
-router.get('/', function (req, res = response) {
-    const userService = new UserService();
-    userService.getUsers((result, error) => 
-    {
-        if(!error) 
-            res.status(200).send(result);
-        else 
-            res.status(500).json({
-                msg: 'Upps! Something was wrong',
-            });
-    });
+router.get('/', 
+    [validateJWT],
+    function (req, res = response) {
+        const userRepository = new UserRepository();
+        userRepository.getUsers((result, error) => 
+        {
+            if(!error) 
+                res.status(200).send(result);
+            else 
+                res.status(500).json({
+                    msg: 'Upps! Something was wrong',
+                });
+        });
 });
 
-router.get('/:id', function (req, res = response) {
-    const userService = new UserService();
-    userService.getUserById(req.params.id, (result, error) => {
-        if(error) {
-            res.status(500).json({
-                msg: 'Upps! Something was wrong',
-            });
-        }
-        else if(!error && result.length > 0) {
-            res.status(200).send(result[0]);
-        } else {
-            res.status(404).json({msg:'User NOT FOUND'});
-        }
-    });
+router.get('/:id', 
+    [validateJWT],
+    function (req, res = response) {
+        const userRepository = new UserRepository();
+        userRepository.getUserById(req.params.id, (result, error) => {
+            if(error) {
+                res.status(500).json({
+                    msg: 'Upps! Something was wrong',
+                });
+            }
+            else if(!error && result.length > 0) {
+                res.status(200).send(result[0]);
+            } else {
+                res.status(404).json({msg:'User NOT FOUND'});
+            }
+        });
 });
 
 router.post('/', 
     [
+        validateJWT,
         check('email', 'Email is not valid').isEmail(),
         check('email', 'The email is too long, max-length 45').isLength({max: 45}),
         check('username', 'The username is mandatory').notEmpty(),
@@ -46,8 +52,8 @@ router.post('/',
         if(!errors.isEmpty()) {
             res.status(400).json(errors);
         } else {
-            const userService = new UserService();
-            userService.saveUser(req.body, (result, error) => {
+            const userRepository = new UserRepository();
+            userRepository.saveUser(req.body, (result, error) => {
                 if(!error)
                     res.status(201).json({
                         msg: 'User created',
@@ -64,6 +70,7 @@ router.post('/',
 
 router.put('/:id', 
     [
+        validateJWT,
         check('email', 'Email is not valid').isEmail(),
         check('email', 'The email is too long, max-length 45').isLength({max: 45}),
         check('username', 'The username is mandatory').notEmpty(),
@@ -75,8 +82,8 @@ router.put('/:id',
         if(!errors.isEmpty()) {
             res.status(400).json(errors);
         } else {
-            const userService = new UserService();
-            userService.updateUser(req.params.id, req.body, (result, err) => {
+            const userRepository = new UserRepository();
+            userRepository.updateUser(req.params.id, req.body, (result, err) => {
                 if(err && err == 'EMAIL_DUPLICATED')
                     res.status(409).json({
                         msg: 'There is a user with the same email'
@@ -94,17 +101,19 @@ router.put('/:id',
         }
 });
 
-router.delete('/:id', function (req, res = response) {
-    const userService = new UserService();
-    userService.deleteUser(req.params.id, (result, error) => 
-    {
-        if(!error)
-            res.status(200).json({msg: 'The user has been deleted'});
-        else 
-            res.status(500).json({
-                msg: 'Upps! Something was wrong',
-            });
-    });
+router.delete('/:id', 
+    [validateJWT],
+    function (req, res = response) {
+        const userRepository = new UserRepository();
+        userRepository.deleteUser(req.params.id, (result, error) => 
+        {
+            if(!error)
+                res.status(200).json({msg: 'The user has been deleted'});
+            else 
+                res.status(500).json({
+                    msg: 'Upps! Something was wrong',
+                });
+        });
 });
 
 module.exports = router;
