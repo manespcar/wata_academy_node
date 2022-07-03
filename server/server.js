@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const {mysqlConnection} = require('../config/config.db');
+const mysqlConnection = require('../config/config.db');
 
 require('dotenv').config();
 
@@ -17,7 +17,12 @@ class Server {
     }
 
     connectDB() {
-        mysqlConnection();
+        mysqlConnection.connect((err)=> {
+            if(!err)
+                console.log('Connection Established Successfully');
+            else
+                console.log('Connection Failed!'+ JSON.stringify(err,undefined,2));
+        });;
     }
 
     middlewares() {
