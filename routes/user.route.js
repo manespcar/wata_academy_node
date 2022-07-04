@@ -54,7 +54,11 @@ router.post('/',
         } else {
             const userRepository = new UserRepository();
             userRepository.saveUser(req.body, (result, error) => {
-                if(!error)
+                if(error && error == 'EMAIL_DUPLICATED')
+                    res.status(409).json({
+                        msg: 'There is a user with the same email'
+                    });
+                else if(!error)
                     res.status(201).json({
                         msg: 'User created',
                         userId: result

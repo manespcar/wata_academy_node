@@ -32,15 +32,22 @@ class UserRepository {
         const salt = bcrypt.genSaltSync();
         const passwordEncrypted = bcrypt.hashSync(password, salt);
 
-        mysqlConnection.query('INSERT INTO users (username, password, email, phone) VALUES (?, ?, ?, ?)', 
-            [username, passwordEncrypted, email, phone], 
-            (err, result) => {
-                if(!err) 
-                    callback(result.insertId, null);
-                else 
-                    callback(null, err);
-            }
-        );
+        mysqlConnection.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
+            if (!err && results.length > 0)
+               return callback(null, 'EMAIL_DUPLICATED');
+            else if(results.length == 0){
+                mysqlConnection.query('INSERT INTO users (username, password, email, phone) VALUES (?, ?, ?, ?)', 
+                [username, passwordEncrypted, email, phone], 
+                (err, result) => {
+                    if(!err) 
+                        callback(result.insertId, null);
+                    else 
+                        callback(null, err);
+                });
+            } 
+            else
+                return callback(null, err);
+        });   
     }
 
     updateUser(id, data, callback) {
