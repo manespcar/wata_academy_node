@@ -19,12 +19,12 @@ router.post('/login',
 
             const userRepository = new UserRepository();
             userRepository.isRegistered(email, password, async (result, error) => {
-                if(!error && result){
+                if(!error && result == -1)
+                    res.status(403).json({msg: 'User not registered'});
+                else if(!error && result){
                     const token = await generateJWT(result);
                     res.status(200).json({token: token});
                 }
-                else if(!error && result == -1)
-                    res.status(403).json({msg: 'User not registered'});
                 else 
                     res.status(500).json({
                         msg: 'Upps! Something was wrong',
